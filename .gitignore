@@ -1,0 +1,27 @@
+# Seed database (restored at setup from backend/seed_data/db.sqlite3.gz.part-*)
+db.sqlite3
+
+# Python
+frontend/.vite
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

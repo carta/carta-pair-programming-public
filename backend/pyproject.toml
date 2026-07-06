@@ -1,0 +1,40 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.10.8"
+dependencies = [
+    "django>=5.2.14",
+    "django-cors-headers>=4.9.0",
+    "django-ninja>=1.6.2",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=6.0.2",
+    "factory-boy>=3.3.3",
+    "mypy>=1.20.0",
+    "pytest>=8.0",
+    "pytest-django>=4.9",
+]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+python_version = "3.13"
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["accounts.factories", "accounts.tests"]
+disallow_untyped_calls = false
+disable_error_code = ["attr-defined", "type-arg"]
+
+[[tool.mypy.overrides]]
+module = "factory.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "bank.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
+[tool.django-stubs]
+django_settings_module = "bank.settings"
