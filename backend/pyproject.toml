@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.10.8"
 dependencies = [
-    "django>=5.2.14",
+    "django>=5.2.15",
     "django-cors-headers>=4.9.0",
     "django-ninja>=1.6.2",
 ]
