@@ -1,0 +1,83 @@
+# Deployment + Service + ValidatingWebhookConfiguration for the arch webhook.
+# The webhook is OBSERVE-ONLY: it always allows pods and fails open.
+#
+# TLS: this manifest assumes cert-manager injects the serving cert into the
+# Secret "arch-webhook-tls" and the caBundle via the
+# cert-manager.io/inject-ca-from annotation. Adjust to your cert workflow.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arch-admission-webhook
+  namespace: platform
+  labels: { app: arch-admission-webhook }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: arch-admission-webhook }
+  template:
+    metadata:
+      labels: { app: arch-admission-webhook }
+    spec:
+      containers:
+        - name: webhook
+          image: REPLACE_ME/arch-admission-webhook:latest
+          args: []
+          ports:
+            - { name: https, containerPort: 8443 }
+          env:
+            # DownwardAPI: reach the node-local Datadog agent.
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef: { fieldPath: status.hostIP }
+          volumeMounts:
+            - { name: certs, mountPath: /etc/webhook/certs, readOnly: true }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8443, scheme: HTTPS }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 128Mi }
+      volumes:
+        - name: certs
+          secret: { secretName: arch-webhook-tls }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arch-admission-webhook
+  namespace: platform
+spec:
+  selector: { app: arch-admission-webhook }
+  ports:
+    - { port: 443, targetPort: 8443 }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: arch-admission-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: platform/arch-webhook-tls
+webhooks:
+  - name: arch.observe.carta.internal
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    # Never block admission if the webhook is down or slow.
+    failurePolicy: Ignore
+    timeoutSeconds: 3
+    clientConfig:
+      service:
+        name: arch-admission-webhook
+        namespace: platform
+        path: /validate
+        port: 443
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    # Skip control-plane / system namespaces.
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: ["kube-system", "kube-public"]
