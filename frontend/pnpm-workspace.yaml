@@ -1,0 +1,26 @@
+# Single-package project -- this file exists only to hold pnpm settings.
+# pnpm 11 reads only registry/auth keys from a project .npmrc and ignores both
+# package.json "overrides" and package.json "pnpm", so settings put there would be
+# a silent no-op. See https://pnpm.io/settings
+
+# Migration default (DX-4381): a real, flat node_modules like npm's (no symlinked
+# store). Hoisting choices can differ from npm's (see the PR).
+nodeLinker: hoisted
+
+# Migration default (DX-4381). pnpm 11 otherwise checks deps before every `pnpm run` /
+# `pnpm exec` and can start an implicit install. npm never installed as a side effect
+# of `npm run`, and the Docker image runs `pnpm run dev` on a node_modules volume.
+#
+# Tailwind's automatic source detection scans this file (unlike pnpm-lock.yaml), so a
+# word here that is also a utility class name ends up in the built CSS. Check
+# `pnpm exec vite build` output after editing comments.
+verifyDepsBeforeRun: false
+
+# pnpm 11 runs a dependency's install script only if it is set to true here. Every
+# dependency with an install script needs an explicit true or false entry, or
+# `pnpm install` fails with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  # msw (a dependency of the shadcn CLI) has a postinstall that npm ran. It copies
+  # mockServiceWorker.js only when package.json sets msw.workerDirectory, which this
+  # project does not, so today it changes no files. Kept on so behaviour matches npm.
+  msw: true

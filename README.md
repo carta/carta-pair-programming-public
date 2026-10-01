@@ -38,3 +38,14 @@ Visit [http://localhost:5173](http://localhost:5173).
 
 > On first start, the backend restores its pre-seeded database from the compressed files in
 > `backend/seed_data/` (a few seconds) before the API becomes available.
+
+If you have run the app before and the frontend's dependencies have changed since (for example,
+after the frontend moved from npm to pnpm), recreate the frontend's `node_modules` volume once.
+`docker compose up --build` on its own keeps the old one:
+
+```bash
+docker compose rm -s -f -v frontend
+docker compose up --build
+```
+
+The frontend uses pnpm; see [`frontend/README.md`](frontend/README.md) to work on it outside Docker.
