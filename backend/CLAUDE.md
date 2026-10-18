@@ -15,7 +15,7 @@ make run-backend           # uv sync + migrate + runserver on :8000
 make test                  # uv sync + pytest
 make test-v                # pytest verbose
 make test-cov              # pytest with coverage
-make typecheck             # mypy (strict mode)
+make typecheck             # ty
 make generate-migrations   # makemigrations
 make migrate               # apply migrations
 ```
@@ -64,7 +64,7 @@ Test factories (`accounts/factories.py`) use Factory Boy for all models. Tests u
 
 ## Type Checking
 
-Mypy runs in strict mode with `mypy_django_plugin`. Test/factory modules have relaxed type checking rules (see `pyproject.toml` overrides).
+[ty](https://docs.astral.sh/ty/) checks the backend, reading Django's types from `django-stubs`. ty has no Django plugin, so models declare what Django adds at runtime (`id`, reverse relations) as type-only annotations. Factory/test modules have relaxed rules (see `[[tool.ty.overrides]]` in `pyproject.toml`).
 
 ## Dependencies
 

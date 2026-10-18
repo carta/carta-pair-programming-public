@@ -21,7 +21,7 @@ test-v:
 	cd backend && uv run python -m pytest -v
 
 typecheck:
-	cd backend && uv run python -m mypy .
+	cd backend && uv run ty check
 
 generate-migrations:
 	cd backend && uv run python manage.py makemigrations
