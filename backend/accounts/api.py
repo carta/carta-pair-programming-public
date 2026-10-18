@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from ninja import Query, Router, Schema
+from ninja import Router, Schema
 
 from .models import Account, Transaction
 
@@ -58,10 +58,10 @@ def list_users(request: HttpRequest) -> list[UserOut]:
     users = User.objects.annotate(transaction_count=Count("accounts__transactions"))
     return [
         UserOut(
-            id=u.id,
+            id=u.id,  # ty: ignore[unresolved-attribute]
             username=u.username,
             email=u.email,
-            transaction_count=u.transaction_count,
+            transaction_count=u.transaction_count,  # ty: ignore[unresolved-attribute]
         )
         for u in users
     ]
@@ -77,7 +77,7 @@ def _compute_balance(transactions: list[Transaction]) -> Decimal:
 @router.get("/users/{user_id}/accounts", response=list[AccountOut])
 def list_accounts(request: HttpRequest, user_id: int) -> list[AccountOut]:
     user = get_object_or_404(User, id=user_id)
-    accounts = user.accounts.all()
+    accounts = user.accounts.all()  # ty: ignore[unresolved-attribute]
     return [
         AccountOut(
             id=a.id,
@@ -91,9 +91,7 @@ def list_accounts(request: HttpRequest, user_id: int) -> list[AccountOut]:
 
 
 @router.get("/accounts/{account_id}/transactions", response=list[TransactionOut])
-def list_transactions(
-    request: HttpRequest, account_id: int, search: str = Query("")  # type: ignore[type-arg]
-) -> list[TransactionOut]:
+def list_transactions(request: HttpRequest, account_id: int, search: str = "") -> list[TransactionOut]:
     account = get_object_or_404(Account, id=account_id)
     transactions = list(account.transactions.order_by("date").all())
 
