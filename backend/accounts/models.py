@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.contrib.auth.models import User
+
+if TYPE_CHECKING:
+    from django.db.models.fields.related_descriptors import RelatedManager
 
 
 class Account(models.Model):
@@ -7,6 +12,11 @@ class Account(models.Model):
         CHECKING = "checking"
         SAVINGS = "savings"
         CREDIT = "credit"
+
+    # Type-only declarations for what Django adds at runtime: the implicit primary key and
+    # the reverse side of Transaction.account.
+    id: int
+    transactions: "RelatedManager[Transaction]"
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="accounts")
     name = models.CharField(max_length=255)
@@ -19,6 +29,7 @@ class Account(models.Model):
 
 
 class Category(models.Model):
+    id: int
     name = models.CharField(max_length=100, unique=True)
 
     class Meta:
@@ -29,6 +40,7 @@ class Category(models.Model):
 
 
 class Merchant(models.Model):
+    id: int
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self) -> str:
@@ -40,6 +52,7 @@ class Transaction(models.Model):
         DEBIT = "debit"
         CREDIT = "credit"
 
+    id: int
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions")
     date = models.DateField()
     amount = models.DecimalField(max_digits=12, decimal_places=2)

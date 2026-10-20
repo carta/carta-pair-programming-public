@@ -13,28 +13,17 @@ dependencies = [
 dev = [
     "django-stubs>=6.0.2",
     "factory-boy>=3.3.3",
-    "mypy>=1.20.0",
     "pytest>=9.1.1",
     "pytest-django>=4.14.0",
+    "ty>=0.0.89,<0.1",
 ]
 
-[tool.mypy]
-plugins = ["mypy_django_plugin.main"]
-python_version = "3.13"
-strict = true
-
-[[tool.mypy.overrides]]
-module = ["accounts.factories", "accounts.tests"]
-disallow_untyped_calls = false
-disable_error_code = ["attr-defined", "type-arg"]
-
-[[tool.mypy.overrides]]
-module = "factory.*"
-ignore_missing_imports = true
+# Factory Boy builds its factories at runtime: ty reads each `class Meta` as an override of
+# the base factory's, and a factory call as the factory rather than the model instance it returns.
+[[tool.ty.overrides]]
+include = ["accounts/factories.py", "accounts/tests.py"]
+rules = { invalid-attribute-override = "ignore", unresolved-attribute = "ignore" }
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "bank.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-
-[tool.django-stubs]
-django_settings_module = "bank.settings"
